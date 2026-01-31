@@ -26,7 +26,7 @@ router.post("/login", async (req, res) => {
   const token = jwt.sign(
     { id: user._id, role: user.role },
     process.env.JWT_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: "7d" },
   );
 
   res.json({ token, role: user.role });
@@ -38,12 +38,14 @@ router.post("/truck-login", async (req, res) => {
     const { truckNo, password } = req.body;
 
     if (!truckNo || !password) {
-      return res.status(400).json({ message: "Truck number and password required" });
+      return res
+        .status(400)
+        .json({ message: "Truck number and password required" });
     }
 
     // Find truck by truckNumber (not truckNo - adjust based on your schema)
     const truck = await Truck.findOne({ truckNumber: truckNo });
-    
+
     if (!truck) {
       return res.status(401).json({ message: "Truck not found" });
     }
@@ -56,21 +58,21 @@ router.post("/truck-login", async (req, res) => {
 
     // Generate JWT token for truck/driver
     const token = jwt.sign(
-      { 
-        id: truck._id, 
-        role: "TRUCK", 
-        truckNumber: truck.truckNumber 
+      {
+        id: truck._id,
+        role: "TRUCK",
+        truckNumber: truck.truckNumber,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "24h" }
+      { expiresIn: "24h" },
     );
 
-    res.json({ 
-      token, 
+    res.json({
+      token,
       role: "TRUCK",
       truckId: truck._id,
       truckNumber: truck.truckNumber,
-      capacityTons: truck.capacityTons
+      capacityTons: truck.capacityTons,
     });
   } catch (err) {
     console.error(err);
@@ -78,12 +80,31 @@ router.post("/truck-login", async (req, res) => {
   }
 });
 
-// Get current authenticated user
+// Get current authenticated user or truck info
 import { authenticate } from "../middlewares/auth.js";
 
 router.get("/me", authenticate, async (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ message: "Not authenticated" });
+    // If this is a truck token, return truck info
+    if (req.truck) {
+      const truck = await Truck.findById(req.truck.id);
+      if (!truck) return res.status(404).json({ message: "Truck not found" });
+      return res.json({
+        id: truck._id,
+        truckId: truck._id,
+        truckNumber: truck.truckNumber,
+        capacityTons: truck.capacityTons,
+        usedTons: truck.usedTons,
+        currentLocation: truck.currentLocation,
+        containerAvailable: truck.containerAvailable,
+        delayMinutes: truck.delayMinutes,
+        status: truck.status,
+        role: "TRUCK",
+      });
+    }
+
+    if (!req.user)
+      return res.status(401).json({ message: "Not authenticated" });
     const user = await User.findById(req.user.id).select("-password");
     res.json(user);
   } catch (err) {

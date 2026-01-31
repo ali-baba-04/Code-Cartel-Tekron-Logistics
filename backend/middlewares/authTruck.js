@@ -19,14 +19,16 @@ export const authenticateTruck = async (req, res, next) => {
       }
     }
 
-    // Fallback: authenticate using truckNo + password in body
+    // Fallback: authenticate using truckNumber (truckNo) + password in body
     const { truckNo, password } = req.body;
 
     if (!truckNo || !password) {
-      return res.status(400).json({ message: "Truck number and password required" });
+      return res
+        .status(400)
+        .json({ message: "Truck number and password required" });
     }
 
-    const truck = await Truck.findOne({ truckNo });
+    const truck = await Truck.findOne({ truckNumber: truckNo });
     if (!truck) {
       return res.status(401).json({ message: "Truck not found" });
     }
