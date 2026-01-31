@@ -1,11 +1,11 @@
 import { Section } from "../components/Section";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
-import steps from '../../const/steps.js'
+import steps from "../../const/steps.js";
 
 const AgentLoop = () => {
   return (
     <Section className="bg-slate-50 relative overflow-hidden">
-
       <div className="hidden lg:block absolute top-1/2 left-0 w-full h-1 bg-slate-200 -translate-y-1/2 z-0" />
 
       <div className="text-center mb-16 relative z-10">

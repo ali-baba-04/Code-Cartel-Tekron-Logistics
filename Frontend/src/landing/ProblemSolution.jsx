@@ -1,5 +1,6 @@
 import { Section } from "../components/Section";
 import { XCircle, CheckCircle, Map, Zap } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 
 const ProblemSolution = () => {
