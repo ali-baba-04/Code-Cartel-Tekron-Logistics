@@ -3,7 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [isTruckLoggedIn, setIsTruckLoggedIn] = useState(false);
   const navigate = useNavigate();
 
   // Smooth scroll helper with offset for fixed navbar
@@ -20,9 +21,15 @@ const Navbar = () => {
     };
     window.addEventListener("scroll", handleScroll);
 
-    setIsLoggedIn(Boolean(localStorage.getItem("token")));
+    const type = localStorage.getItem("auth_type");
+    setIsUserLoggedIn(type === "USER");
+    setIsTruckLoggedIn(type === "TRUCK");
 
-    const onStorage = () => setIsLoggedIn(Boolean(localStorage.getItem("token")));
+    const onStorage = () => {
+      const t = localStorage.getItem("auth_type");
+      setIsUserLoggedIn(t === "USER");
+      setIsTruckLoggedIn(t === "TRUCK");
+    };
     window.addEventListener("storage", onStorage);
 
     return () => {
@@ -31,10 +38,25 @@ const Navbar = () => {
     };
   }, []);
 
-  const logout = () => {
+  const logoutUser = () => {
     localStorage.removeItem("token");
-    setIsLoggedIn(false);
+    localStorage.removeItem("auth_type");
+    setIsUserLoggedIn(false);
     navigate("/", { replace: true });
+    // notify other listeners
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  const logoutTruck = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("auth_type");
+    localStorage.removeItem("truck_token");
+    localStorage.removeItem("truck_id");
+    localStorage.removeItem("truck_number");
+    setIsTruckLoggedIn(false);
+    navigate("/", { replace: true });
+    // notify other listeners
+    window.dispatchEvent(new Event('storage'));
   };
 
   return (
@@ -67,16 +89,27 @@ const Navbar = () => {
           </a>
         </div>
         <div className="flex items-center gap-4">
-          {isLoggedIn ? (
+          {/* User auth */}
+          {isUserLoggedIn ? (
             <>
               <Link to="/dashboard" className="text-sm text-slate-200 hover:text-white">Dashboard</Link>
-              <button onClick={logout} className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-md text-sm">Logout</button>
+              <button onClick={logoutUser} className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-md text-sm">Logout</button>
             </>
           ) : (
             <>
               <Link to="/login" className="text-sm text-slate-200 hover:text-white">Login</Link>
               <Link to="/signup" className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-md font-medium text-sm transition-colors">Get Started</Link>
             </>
+          )}
+
+          {/* Truck (driver) auth */}
+          {isTruckLoggedIn ? (
+            <>
+              <Link to="/driver/dashboard" className="text-sm text-slate-200 hover:text-white">Driver Dashboard</Link>
+              <button onClick={logoutTruck} className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-md text-sm">Logout</button>
+            </>
+          ) : (
+            <Link to="/driver/login" className="text-sm text-slate-200 hover:text-white">Driver Login</Link>
           )}
         </div>
       </div>
