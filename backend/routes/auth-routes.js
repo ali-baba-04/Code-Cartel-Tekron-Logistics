@@ -1,6 +1,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import { User, Truck } from "../db.js";
+import { authenticate } from "../middlewares/auth.js";
 
 const router = express.Router();
 
@@ -80,33 +81,21 @@ router.post("/truck-login", async (req, res) => {
   }
 });
 
-// Get current authenticated user or truck info
-import { authenticate } from "../middlewares/auth.js";
-
+// Get current authenticated user or truck
 router.get("/me", authenticate, async (req, res) => {
   try {
-    // If this is a truck token, return truck info
+    if (req.user) {
+      const user = await User.findById(req.user.id).select("-password");
+      return res.json({ type: "USER", user });
+    }
+
     if (req.truck) {
       const truck = await Truck.findById(req.truck.id);
       if (!truck) return res.status(404).json({ message: "Truck not found" });
-      return res.json({
-        id: truck._id,
-        truckId: truck._id,
-        truckNumber: truck.truckNumber,
-        capacityTons: truck.capacityTons,
-        usedTons: truck.usedTons,
-        currentLocation: truck.currentLocation,
-        containerAvailable: truck.containerAvailable,
-        delayMinutes: truck.delayMinutes,
-        status: truck.status,
-        role: "TRUCK",
-      });
+      return res.json({ type: "TRUCK", truck });
     }
 
-    if (!req.user)
-      return res.status(401).json({ message: "Not authenticated" });
-    const user = await User.findById(req.user.id).select("-password");
-    res.json(user);
+    return res.status(401).json({ message: "Not authenticated" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

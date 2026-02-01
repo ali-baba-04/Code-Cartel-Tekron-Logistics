@@ -3,9 +3,17 @@ import { Link } from "react-router-dom";
 
 const Navbar = ({ solid = false }) => {
   const [scrolled, setScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(() =>
-    Boolean(localStorage.getItem("token")),
-  );
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [isTruckLoggedIn, setIsTruckLoggedIn] = useState(false);
+  const navigate = useNavigate();
+
+  // Smooth scroll helper with offset for fixed navbar
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const y = el.getBoundingClientRect().top + window.pageYOffset - 80; // offset for fixed navbar
+    window.scrollTo({ top: y, behavior: "smooth" });
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -13,8 +21,15 @@ const Navbar = ({ solid = false }) => {
     };
     window.addEventListener("scroll", handleScroll);
 
-    const onStorage = () =>
-      setIsLoggedIn(Boolean(localStorage.getItem("token")));
+    const type = localStorage.getItem("auth_type");
+    setIsUserLoggedIn(type === "USER");
+    setIsTruckLoggedIn(type === "TRUCK");
+
+    const onStorage = () => {
+      const t = localStorage.getItem("auth_type");
+      setIsUserLoggedIn(t === "USER");
+      setIsTruckLoggedIn(t === "TRUCK");
+    };
     window.addEventListener("storage", onStorage);
 
     return () => {
@@ -23,7 +38,26 @@ const Navbar = ({ solid = false }) => {
     };
   }, []);
 
-  const active = solid || scrolled;
+  const logoutUser = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("auth_type");
+    setIsUserLoggedIn(false);
+    navigate("/", { replace: true });
+    // notify other listeners
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  const logoutTruck = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("auth_type");
+    localStorage.removeItem("truck_token");
+    localStorage.removeItem("truck_id");
+    localStorage.removeItem("truck_number");
+    setIsTruckLoggedIn(false);
+    navigate("/", { replace: true });
+    // notify other listeners
+    window.dispatchEvent(new Event('storage'));
+  };
 
   return (
     <nav
@@ -41,24 +75,11 @@ const Navbar = ({ solid = false }) => {
         </div>
 
         <div className="flex items-center gap-4">
-          {isLoggedIn ? (
+          {/* User auth */}
+          {isUserLoggedIn ? (
             <>
-              <Link
-                to="/dashboard"
-                className="text-sm font-medium text-slate-300 hover:text-white mr-2"
-              >
-                Dashboard
-              </Link>
-              <button
-                onClick={() => {
-                  localStorage.removeItem("token");
-                  sessionStorage.removeItem("token");
-                  window.location.reload();
-                }}
-                className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded"
-              >
-                Logout
-              </button>
+              <Link to="/dashboard" className="text-sm text-slate-200 hover:text-white">Dashboard</Link>
+              <button onClick={logoutUser} className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-md text-sm">Logout</button>
             </>
           ) : (
             <>
@@ -81,6 +102,16 @@ const Navbar = ({ solid = false }) => {
                 Get Started
               </Link>
             </>
+          )}
+
+          {/* Truck (driver) auth */}
+          {isTruckLoggedIn ? (
+            <>
+              <Link to="/driver/dashboard" className="text-sm text-slate-200 hover:text-white">Driver Dashboard</Link>
+              <button onClick={logoutTruck} className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-md text-sm">Logout</button>
+            </>
+          ) : (
+            <Link to="/driver/login" className="text-sm text-slate-200 hover:text-white">Driver Login</Link>
           )}
         </div>
       </div>
