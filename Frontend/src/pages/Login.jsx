@@ -1,11 +1,15 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import api from "../utils/api";
+import AuthCard from "../components/AuthCard";
+import AuthForm from "../components/AuthForm";
 
 const Login = () => {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const showSuccess = Boolean(location.state?.signupSuccess);
 
   const submit = async (e) => {
     e.preventDefault();

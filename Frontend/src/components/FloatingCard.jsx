@@ -1,6 +1,7 @@
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 
-const FloatingCard = ({className, delay, icon, label, value}) => {
+const FloatingCard = ({ className, delay, icon, label, value }) => {
   return (
     <motion.div
       className={`absolute bg-slate-800 border border-slate-600 p-3 rounded-lg shadow-xl ${className}`}

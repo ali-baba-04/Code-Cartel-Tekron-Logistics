@@ -1,1 +1,8 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* Destination marker on fleet map: no default Leaflet icon wrapper */
+.fleet-map-dest-icon {
+  background: none !important;
+  border: none !important;
+}

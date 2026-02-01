@@ -21,13 +21,15 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       navigate("/login", { replace: true });
       return;
     }
 
-    const fetchMe = async () => {
+    const fetchMeAndData = async () => {
+      setLoading(true);
       try {
         setLoading(true);
         const res = await fetch("http://localhost:5000/api/auth/me", {
@@ -58,7 +60,7 @@ const Dashboard = () => {
       }
     };
 
-    fetchMe();
+    fetchMeAndData();
   }, [navigate]);
 
   const updateTruck = async (e) => {
@@ -323,6 +325,7 @@ const Dashboard = () => {
             <button onClick={logout} className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded">Logout</button>
           </div>
         </div>
+      </header>
 
         {/* Owner dashboard */}
         {me && me.type === "USER" && me.user.role === "OWNER" && (

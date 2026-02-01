@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-const Navbar = () => {
+const Navbar = ({ solid = false }) => {
   const [scrolled, setScrolled] = useState(false);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
   const [isTruckLoggedIn, setIsTruckLoggedIn] = useState(false);
@@ -61,7 +61,7 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-slate-900/95 backdrop-blur-md shadow-lg py-4 border-b border-slate-800" : "bg-transparent py-6"}`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${active ? "bg-slate-900/95 backdrop-blur-md shadow-lg py-4 border-b border-slate-800" : "bg-transparent py-6"}`}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center">
         <div
@@ -73,21 +73,7 @@ const Navbar = () => {
           </div>
           LogiNav
         </div>
-        <div className="hidden md:flex gap-8 text-sm font-medium text-slate-300">
-          <a href="#problem" onClick={(e) => { e.preventDefault(); scrollToSection('problem'); }} className="hover:text-white transition-colors">
-            The Problem
-          </a>
-          <a
-            href="#how-it-works"
-            onClick={(e) => { e.preventDefault(); scrollToSection('how-it-works'); }}
-            className="hover:text-white transition-colors"
-          >
-            How it Works
-          </a>
-          <a href="#features" onClick={(e) => { e.preventDefault(); scrollToSection('features'); }} className="hover:text-white transition-colors">
-            Features
-          </a>
-        </div>
+
         <div className="flex items-center gap-4">
           {/* User auth */}
           {isUserLoggedIn ? (
@@ -97,8 +83,24 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link to="/login" className="text-sm text-slate-200 hover:text-white">Login</Link>
-              <Link to="/signup" className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-md font-medium text-sm transition-colors">Get Started</Link>
+              <Link
+                to="/login"
+                className="text-sm font-medium text-slate-300 hover:text-white mr-2"
+              >
+                Log in
+              </Link>
+              <Link
+                to="/truck-login"
+                className="text-sm font-medium text-slate-300 hover:text-white mr-2"
+              >
+                Driver login
+              </Link>
+              <Link
+                to="/signup"
+                className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-md font-medium text-sm transition-colors"
+              >
+                Get Started
+              </Link>
             </>
           )}
 
@@ -115,6 +117,6 @@ const Navbar = () => {
       </div>
     </nav>
   );
-}
+};
 
-export default Navbar
+export default Navbar;

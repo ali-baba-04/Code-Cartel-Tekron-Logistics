@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 export const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URL, {
-      dbName: "logistics_ai"
+      dbName: "logistics_ai",
     });
     console.log("✅ MongoDB Connected");
   } catch (err) {
@@ -17,16 +17,19 @@ export const connectDB = async () => {
 /* =========================
    USER (OWNER / USER)
 ========================= */
-const userSchema = new mongoose.Schema({
-  name: String,
-  email: { type: String, unique: true },
-  password: String,
-  role: {
-    type: String,
-    enum: ["OWNER", "USER"],
-    required: true
-  }
-}, { timestamps: true });
+const userSchema = new mongoose.Schema(
+  {
+    name: String,
+    email: { type: String, unique: true },
+    password: String,
+    role: {
+      type: String,
+      enum: ["OWNER", "USER"],
+      required: true,
+    },
+  },
+  { timestamps: true },
+);
 
 export const User = mongoose.model("User", userSchema);
 
@@ -38,53 +41,64 @@ const truckSchema = new mongoose.Schema(
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      required: true,
     },
 
     truckNumber: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
     },
 
-    password: {  // ADD THIS FIELD
+    password: {
+      // ADD THIS FIELD
       type: String,
       required: true,
-      default: "driver123"  // Default password, should be changed
+      default: "driver123", // Default password, should be changed
     },
 
     capacityTons: {
       type: Number,
-      required: true
+      required: true,
     },
 
     usedTons: {
       type: Number,
-      default: 0
+      default: 0,
     },
 
     currentLocation: {
       lat: Number,
-      lng: Number
+      lng: Number,
+    },
+
+    destination: {
+      city: String,
+      lat: Number,
+      lng: Number,
     },
 
     containerAvailable: {
       type: Boolean,
-      default: true
+      default: true,
     },
 
     delayMinutes: {
       type: Number,
-      default: 0
+      default: 0,
     },
 
     status: {
       type: String,
       enum: ["IDLE", "ON_TRIP"],
-      default: "IDLE"
-    }
+      default: "IDLE",
+    },
   },
-  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
 // Virtual field for available capacity
 truckSchema.virtual("availableTons").get(function () {
@@ -92,7 +106,6 @@ truckSchema.virtual("availableTons").get(function () {
 });
 
 export const Truck = mongoose.model("Truck", truckSchema);
-
 
 /* =========================
    DRIVER (NO SIGNUP)
@@ -103,8 +116,8 @@ const driverSchema = new mongoose.Schema({
 
   truck: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Truck"
-  }
+    ref: "Truck",
+  },
 });
 
 export const Driver = mongoose.model("Driver", driverSchema);
@@ -112,30 +125,62 @@ export const Driver = mongoose.model("Driver", driverSchema);
 /* =========================
    PR (LOAD REQUEST)
 ========================= */
-const prSchema = new mongoose.Schema({
-  raisedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
+const prSchema = new mongoose.Schema(
+  {
+    raisedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
+    pickup: String,
+    drop: String,
+    distanceKm: Number,
+    loadTons: Number,
+    priceOffered: Number,
+
+    status: {
+      type: String,
+      enum: ["PENDING", "ACCEPTED", "REJECTED"],
+      default: "PENDING",
+    },
+
+    agentEvaluation: {
+      recommended: Boolean,
+      expectedProfit: Number,
+      risk: String,
+      reason: String,
+    },
   },
-
-  pickup: String,
-  drop: String,
-  distanceKm: Number,
-  loadTons: Number,
-  priceOffered: Number,
-
-  status: {
-    type: String,
-    enum: ["PENDING", "ACCEPTED", "REJECTED"],
-    default: "PENDING"
-  },
-
-  agentEvaluation: {
-    recommended: Boolean,
-    expectedProfit: Number,
-    risk: String,
-    reason: String
-  }
-}, { timestamps: true });
+  { timestamps: true },
+);
 
 export const PR = mongoose.model("PR", prSchema);
+
+/* =========================
+   TRIP (Telemetry)
+========================= */
+const tripSchema = new mongoose.Schema(
+  {
+    truck: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Truck",
+      required: true,
+    },
+    startTime: Date,
+    endTime: Date,
+    startLocation: {
+      lat: Number,
+      lng: Number,
+    },
+    updates: [
+      {
+        lat: Number,
+        lng: Number,
+        timestamp: Date,
+      },
+    ],
+  },
+  { timestamps: true },
+);
+
+export const Trip = mongoose.model("Trip", tripSchema);
